@@ -1,0 +1,90 @@
+Govee API key in .secret
+Light MAC in .light
+Use GET devices for light MAC
+
+10 requests per minute?
+https://developer.govee.com/reference/get-you-devices
+
+GET /router/api/v1/user/devices HTTP/1.1
+Host: https://openapi.api.govee.com
+Content-Type: application/json
+Govee-API-Key: xxxx
+
+POST /router/api/v1/device/control HTTP/1.1
+Host: https://openapi.api.govee.com
+Content-Type: application/json
+Govee-API-Key: xxxx
+
+25-100 brightness
+1-25 is the same value
+
+Calcs:
+start at 6:28
+end at 6:55
+we can only make changes every 7 seconds
+
+            "capabilities": [
+                {
+                    "instance": "powerSwitch",
+                    "parameters": {
+                        "dataType": "ENUM",
+                        "options": [
+                            {
+                                "name": "on",
+                                "value": 1
+                            },
+                            {
+                                "name": "off",
+                                "value": 0
+                            }
+                        ]
+                    },
+                    "type": "devices.capabilities.on_off"
+                },
+                {
+                    "instance": "brightness",
+                    "parameters": {
+                        "dataType": "INTEGER",
+                        "range": {
+                            "max": 100,
+                            "min": 1,
+                            "precision": 1
+                        },
+                        "unit": "unit.percent"
+                    },
+                    "type": "devices.capabilities.range"
+                },
+                {
+                    "instance": "colorRgb",
+                    "parameters": {
+                        "dataType": "INTEGER",
+                        "range": {
+                            "max": 16777215,
+                            "min": 0,
+                            "precision": 1
+                        }
+                    },
+                    "type": "devices.capabilities.color_setting"
+                },
+                {
+                    "instance": "colorTemperatureK",
+                    "parameters": {
+                        "dataType": "INTEGER",
+                        "range": {
+                            "max": 9000,
+                            "min": 2000,
+                            "precision": 1
+                        }
+                    },
+                    "type": "devices.capabilities.color_setting"
+                },
+                {
+                    "instance": "diyScene",
+                    "parameters": {
+                        "dataType": "ENUM",
+                        "options": [
+                        ]
+                    },
+                    "type": "devices.capabilities.dynamic_scene"
+                }
+            ],
