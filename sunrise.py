@@ -96,12 +96,7 @@ if __name__ == '__main__':
             continue
         rise_length = sunrise - dawn
         rise_amount = now - dawn
-        brightness = (int(25+(100-25)*(rise_amount.seconds/rise_length.seconds)**5.0))
-        if brightness < 25:
-            # keep sleeping until brightness is at least 25
-            # TODO: surely there's a way to math when 25 will happen, but whatever
-            time.sleep(1)
-            continue
+        brightness = int(25+(100-25)*(rise_amount.seconds/rise_length.seconds)**5.0)
 
         # TODO: Better clamp?
         if brightness < 1:
