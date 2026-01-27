@@ -8,7 +8,7 @@ import time
 
 # TODO: Use https://api.sunrise-sunset.org/json?lat=34.034622&lng=-118.457941&tzid=America/Los_Angeles
 # to determine dawn and sunrise time
-DAWN_TIME = '06:28:00'
+DAWN_TIME    = '06:28:00'
 SUNRISE_TIME = '06:55:00'
 
 LIGHT_SKU = 'H6003'
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             continue
         rise_length = sunrise - dawn
         rise_amount = now - dawn
-        brightness = (int(25+(100-25)*rise_amount.seconds/rise_length.seconds))
+        brightness = (int(25+(100-25)*(rise_amount.seconds/rise_length.seconds)**5.0))
         if brightness < 25:
             # keep sleeping until brightness is at least 25
             # TODO: surely there's a way to math when 25 will happen, but whatever
@@ -105,9 +105,9 @@ if __name__ == '__main__':
 
         # TODO: Better clamp?
         if brightness < 1:
-            brigtness = 1
+            brightness = 1
         if brightness > 100:
-            brigtness = 100
+            brightness = 100
         print(brightness)
         control_govee(make_brightness_compat(brightness))
         if bFirst_setting:
