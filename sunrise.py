@@ -8,8 +8,8 @@ import time
 
 # TODO: Use https://api.sunrise-sunset.org/json?lat=34.034622&lng=-118.457941&tzid=America/Los_Angeles
 # to determine dawn and sunrise time
-DAWN_TIME    = '06:28:00'
-SUNRISE_TIME = '06:55:00'
+DAWN_TIME    = '07:28:00'
+SUNRISE_TIME = '07:55:00'
 
 LIGHT_SKU = 'H6003'
 LIGHT_MAC_ADDRESS = None
@@ -38,6 +38,15 @@ POWER_COMPAT = {
     "value": 1
 }
 
+
+def clamp(i):
+    if i > 255:
+        i = 255
+    return i
+
+def make_orange(r):
+    return (clamp(r), clamp(r//4), clamp(r//50))
+
 def control_govee(compat):
     request_id = str(uuid.uuid4())
     request_body = json.dumps(
@@ -65,6 +74,29 @@ def control_govee(compat):
     print(response)
     print(response.content)
 
+def make_color_compat_hex(color_hex):
+    return make_color_compat_int(int(f'0x{color_hex}', 0))
+
+def rgb_to_int(rgb):
+    i = 0
+    i += rgb[0]
+    i <<= 8
+    i += rgb[1]
+    i <<= 8
+    i += rgb[2]
+    return i
+
+def make_color_compat_rgb(rgb):
+    return make_color_compat_int(rgb_to_int(rgb))
+
+def make_color_compat_int(color_int):
+    return {
+        "type": "devices.capabilities.color_setting",
+        "instance": "colorRgb",
+        "value": color_int
+    }
+
+
 def make_brightness_compat(brightness):
     return {
         "type": "devices.capabilities.range",
@@ -73,7 +105,7 @@ def make_brightness_compat(brightness):
     }
 
 
-if __name__ == '__main__':
+def sunrise():
     now = datetime.datetime.now()
     dawn = datetime.datetime.strptime(now.strftime(f"%Y-%m-%d {DAWN_TIME}"), "%Y-%m-%d %H:%M:%S")
     sunrise = datetime.datetime.strptime(now.strftime(f"%Y-%m-%d {SUNRISE_TIME}"), "%Y-%m-%d %H:%M:%S")
@@ -86,7 +118,7 @@ if __name__ == '__main__':
 
     print(dawn)
     print(sunrise)
-    bFirst_setting = True
+
     while now < sunrise:
         now = datetime.datetime.now()
         print(now)
@@ -96,16 +128,30 @@ if __name__ == '__main__':
             continue
         rise_length = sunrise - dawn
         rise_amount = now - dawn
-        brightness = int(25+(100-25)*(rise_amount.seconds/rise_length.seconds)**5.0)
+        percentage = rise_amount.seconds/rise_length.seconds
+        if percentage <= .50:
+            # make percentage from 0%->50% fit [0,1]
+            percentage /= .5
+            control_govee(make_color_compat_rgb(make_orange(int(300*percentage))))
+        else: # percentage > .50
+            # make percentage from 50%->100% fit [0,1]
+            percentage -= .5
+            percentage /= .5
 
-        # TODO: Better clamp?
-        if brightness < 1:
-            brightness = 1
-        if brightness > 100:
-            brightness = 100
-        print(brightness)
-        control_govee(make_brightness_compat(brightness))
-        if bFirst_setting:
-            control_govee(TEMPERATURE_COMPAT)
-            bFirst_setting = False
+            # brightness from 25->100
+            brightness = int(25+(100-25)*percentage**2.0)
+            # TODO: Better clamp?
+            if brightness > 100:
+                brightness = 100
+            control_govee(make_brightness_compat(brightness))
+
         time.sleep(7) # sleep for rate limits
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'setup':
+        control_govee(make_brightness_compat(1))
+        control_govee(make_color_compat_rgb(make_orange(0)))
+        sys.exit(0)
+
+    sunrise()
+
